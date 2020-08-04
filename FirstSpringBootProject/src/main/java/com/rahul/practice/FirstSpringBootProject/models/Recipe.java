@@ -36,7 +36,7 @@ public class Recipe {
 	@Type(type = "org.hibernate.type.BinaryType")
 	private byte[] image;
 
-	@OneToMany(cascade = CascadeType.ALL,mappedBy = "recipe")
+	@OneToMany(cascade = CascadeType.ALL,mappedBy = "recipe",orphanRemoval = true)
 	private List<Ingredient> ingredients = new ArrayList<Ingredient>();
 
 	public void addIngredient(Ingredient ingredient) {

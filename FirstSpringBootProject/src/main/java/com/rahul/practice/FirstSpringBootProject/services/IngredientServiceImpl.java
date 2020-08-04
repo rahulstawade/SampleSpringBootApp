@@ -16,22 +16,15 @@ public class IngredientServiceImpl implements IIngredientService {
 	private IIngredientRepository repo;
 
 	@Override
-	public Recipe assigningRecipeToIngredients(Recipe newRecipeToAdd) {
-		// return this.repo.saveAndFlush(newRecipeToAdd);
+	public List<Ingredient> assigningRecipeToIngredients(Recipe newRecipeToAdd) {
 
 		// setting up recipe_id for ingredients if any
 		newRecipeToAdd.getIngredients().forEach((ingredient) -> {
 			ingredient.setRecipe(newRecipeToAdd);
 		});
 
-		return newRecipeToAdd;
+		return newRecipeToAdd.getIngredients();
 	}
 	
 	
-	
-	public Recipe updateIngredientsInsideRecipe(Recipe recipeToUpdate,List<Ingredient> ingredentsList) {
-		
-		return null;
-		
-	}
 }

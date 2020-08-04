@@ -13,7 +13,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 @Entity
 @Table(name = "Ingredient")
 public class Ingredient {
-	
+
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private int id;
@@ -55,6 +55,19 @@ public class Ingredient {
 
 	public void setRecipe(Recipe recipe) {
 		this.recipe = recipe;
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+
+		if (obj instanceof Ingredient && this.getId() == ((Ingredient) obj).getId()) {
+			return true;
+		}
+		return false;
+	}
+
+	public int hashcode() {
+		return getId();
 	}
 
 }

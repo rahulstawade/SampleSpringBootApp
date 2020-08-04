@@ -1,11 +1,13 @@
 package com.rahul.practice.FirstSpringBootProject.services;
 
+import java.util.Collections;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.rahul.practice.FirstSpringBootProject.models.Ingredient;
 import com.rahul.practice.FirstSpringBootProject.models.Recipe;
 import com.rahul.practice.FirstSpringBootProject.repositories.IRecipeRepository;
 
@@ -14,7 +16,7 @@ public class RecipeServiceImpl implements IRecipeService {
 
 	@Autowired
 	IRecipeRepository repo;
-	
+
 	@Autowired
 	IIngredientService ingredientService;
 
@@ -26,18 +28,12 @@ public class RecipeServiceImpl implements IRecipeService {
 	@Override
 	@Transactional
 	public Recipe addNewRecipe(Recipe newRecipeToAdd) {
-		//return this.repo.saveAndFlush(newRecipeToAdd);
-		
-		// setting up recipe_id for ingredients if any	
-		
-//		newRecipeToAdd.getIngredients().forEach((ingredient)->{
-//			ingredient.setRecipe(newRecipeToAdd);
-//		});
-		
-		Recipe recipeToSave =ingredientService.assigningRecipeToIngredients(newRecipeToAdd);
-		
-		
-		return this.repo.save(recipeToSave);
+		// return this.repo.saveAndFlush(newRecipeToAdd);
+
+		List<Ingredient> ingredientsList = ingredientService.assigningRecipeToIngredients(newRecipeToAdd);
+		newRecipeToAdd.setIngredients(ingredientsList);
+
+		return this.repo.save(newRecipeToAdd);
 	}
 
 	@Override
@@ -51,34 +47,67 @@ public class RecipeServiceImpl implements IRecipeService {
 	}
 
 	@Override
-	public Recipe updateRecipe(Recipe recipeToUpdate) {
-		Recipe fetchedRecipe = this.repo.getOne(recipeToUpdate.getId());
+	public Recipe updateRecipe(Recipe recipeforUpdate) {
 		
-		//Recipe fetchedRecipe = this.repo.findById(recipeToUpdate.getId());
-		fetchedRecipe.getDescription();
+		Recipe fetchedRecipe = this.repo.getOne(recipeforUpdate.getId());
+		/* Recipe fetchedRecipe = this.repo.findById(recipeforUpdate.getId()).get(); */
 		
-		fetchedRecipe.setName(recipeToUpdate.getName());
-		fetchedRecipe.setType(recipeToUpdate.getType());
-		fetchedRecipe.setDescription(recipeToUpdate.getDescription());
+		//Setting values for any changes in Recipe
+		fetchedRecipe.setName(recipeforUpdate.getName());
+		fetchedRecipe.setType(recipeforUpdate.getType());
+		fetchedRecipe.setDescription(recipeforUpdate.getDescription());
+
+		List<Ingredient> ingredientsList = ingredientService.assigningRecipeToIngredients(recipeforUpdate);
+
 		
-		Recipe updatedRecipe = ingredientService.assigningRecipeToIngredients(recipeToUpdate);
+		//clearing old ingredients list tracked by hibernate
+		fetchedRecipe.getIngredients().clear();
+		//adding new ingredients to list tracked by hibernate
+		fetchedRecipe.getIngredients().addAll(ingredientsList);
 		
-//		recipeToUpdate.getIngredients().forEach((ingredient) -> {
-//			if(ingredient.getId()==0) {
-//				ingredient.setRecipe(fetchedRecipe);
-//			}
-//		});
 		
-		fetchedRecipe.setIngredients(updatedRecipe.getIngredients());		
+		//Below is Bad Approach : manually doing everything
 		
+		/*
+		 * 1> Removing Ingredient from DB if not present in provided object for updation
+		 */
+		
+		/*
+		 * fetchedRecipe.getIngredients().removeIf((ingredient) -> { if
+		 * (!recipeforUpdate.getIngredients().contains(ingredient)) {
+		 * ingredient.setRecipe(null); return true; } return false; });
+		 */
+
+		//recipeforUpdate.getIngredients().forEach((ingredient) -> {
+			
+			/* 2> if new ingredient added */
+			
+			/*if (ingredient.getId() == 0) {
+				fetchedRecipe.getIngredients().add(ingredient);
+			}*/
+			
+			
+			/* 3> if changes in existing ingredient */
+			
+			/*
+			 * else { int index = fetchedRecipe.getIngredients().indexOf(ingredient); if
+			 * (index != -1) { Ingredient storedIng =
+			 * fetchedRecipe.getIngredients().get(index);
+			 * storedIng.setName(ingredient.getName());
+			 * storedIng.setQuantity(ingredient.getQuantity()); } }
+			 */
+			
+			// 4> Setting Proper recipe object in Ingredient 
+			// ingredient.setRecipe(fetchedRecipe);
+		//});
 
 		return this.repo.save(fetchedRecipe);
+
 	}
-	
+
 	@Override
-	public void deleteRecipeById(int recipeId) {		
-		this.repo.deleteById(recipeId);		
+	public void deleteRecipeById(int recipeId) {
+		this.repo.deleteById(recipeId);
 	}
-	
-	
+
 }
